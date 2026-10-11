@@ -1,0 +1,11 @@
+target/
+*.class
+*.log
+.idea/
+.vscode/
+*.iml
+.env
+.env.*
+!.env.example
+*.mv.db
+*.trace.db

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title th:text="${pageTitle}">CyberCell AI - Complaint &amp; Investigation Management</title>
+<style>
+:root{--navy:#0f2742;--blue:#1f6feb;--bg:#f3f6fb;--card:#fff;--line:#dfe6f0;--txt:#1b2733;--mut:#68788c;
+--crit:#c62828;--high:#ef6c00;--med:#f9a825;--low:#2e7d32;--ok:#2e7d32}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{background:var(--navy);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:600}
+header .sub{color:#9fb3c8;font-size:12px}
+.pill{font-size:11px;padding:2px 8px;border-radius:10px;background:#1c3a5e;color:#cfe0f3}
+.pill.up{background:#1b5e20;color:#c8e6c9}.pill.down{background:#7f1d1d;color:#ffcdd2}
+nav{display:flex;gap:2px;background:#fff;border-bottom:1px solid var(--line);padding:0 14px;overflow-x:auto}
+nav button{border:0;background:none;padding:12px 16px;cursor:pointer;font-size:14px;color:var(--mut);border-bottom:3px solid transparent;white-space:nowrap}
+nav button.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+main{padding:18px 20px;max-width:1280px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:14px;color:var(--navy)}
+.grid{display:grid;gap:14px}.g5{grid-template-columns:repeat(5,1fr)}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.g5,.g2,.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.g5,.g2,.g3{grid-template-columns:1fr}}
+.kpi .v{font-size:24px;font-weight:700;color:var(--navy)}.kpi .l{color:var(--mut);font-size:12px;margin-top:2px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;color:var(--mut);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid #eef2f7;vertical-align:top}
+tr.click{cursor:pointer}tr.click:hover{background:#f5f9ff}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;color:#fff;background:#78909c}
+.CRITICAL{background:var(--crit)}.HIGH{background:var(--high)}.MEDIUM{background:var(--med);color:#222}.LOW{background:var(--low)}
+.WARNING{background:var(--high)}.INFO{background:#1976d2}
+.st{background:#e8eef7;color:#33475b}
+input,select,textarea{font:inherit;padding:7px 9px;border:1px solid #c8d3e0;border-radius:6px;width:100%;background:#fff}
+textarea{min-height:90px;resize:vertical}
+label{font-size:12px;color:var(--mut);display:block;margin:8px 0 3px}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13px}
+.btn.sec{background:#e8eef7;color:#27415d}.btn.warn{background:var(--high)}.btn.small{padding:4px 10px;font-size:12px}
+.btn:disabled{opacity:.6;cursor:wait}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.row>*{flex:1;min-width:140px}.row>.fit{flex:0 0 auto;min-width:0}
+.bar{height:10px;background:#e8eef7;border-radius:6px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--blue)}
+.barrow{display:grid;grid-template-columns:170px 1fr 70px;gap:8px;align-items:center;margin:5px 0;font-size:12px}
+.mut{color:var(--mut)}.small{font-size:12px}
+.overlay{position:fixed;inset:0;background:rgba(10,25,45,.5);display:none;z-index:20}
+.overlay.show{display:block}
+.drawer{position:absolute;right:0;top:0;bottom:0;width:min(880px,100%);background:var(--bg);overflow-y:auto;padding:16px 18px;box-shadow:-6px 0 24px rgba(0,0,0,.25)}
+.close{float:right;cursor:pointer;font-size:22px;border:0;background:none}
+ul.f{margin:4px 0 0;padding-left:18px}ul.f li{margin:3px 0}
+.rel{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;background:#fcfdff}
+.act{border-left:3px solid var(--blue);padding:4px 10px;margin:8px 0;background:#fff}
+.alert{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-left:5px solid var(--high);padding:10px 12px;margin:8px 0;background:#fff;border-radius:6px}
+.alert.CRITICAL{border-left-color:var(--crit)}.alert.INFO{border-left-color:#1976d2}
+.ans{font-size:16px;font-weight:600;color:var(--navy)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#263238;color:#fff;padding:10px 18px;border-radius:8px;z-index:40;display:none}
+.score{font-size:34px;font-weight:800}
+.tag{display:inline-block;background:#e8f0fe;color:#1a47a0;border-radius:4px;padding:1px 6px;font-size:11px;margin:1px}
+/* Navigation-first layout: clear sidebar, calmer cards, and responsive tables. */
+body{font-size:14px;background:#f5f7fb}
+header{min-height:72px;padding:12px 24px;position:sticky;top:0;z-index:12;box-shadow:0 2px 8px rgba(15,39,66,.08)}
+header h1{font-size:18px;letter-spacing:-.2px}header .sub{margin-top:4px}
+nav#nav{position:fixed;z-index:11;left:0;top:72px;bottom:0;width:232px;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:20px 12px;background:#fff;border-right:1px solid var(--line);border-bottom:0;overflow-y:auto}
+.nav-label{padding:4px 12px;color:#8a97a8;font-size:10px;font-weight:800;letter-spacing:1.2px}
+.nav-label-spaced{margin-top:14px}
+nav#nav button{width:100%;display:flex;align-items:center;gap:11px;text-align:left;padding:11px 12px;border:0;border-radius:8px;color:#536479;font-size:13px;font-weight:600;white-space:normal}
+nav#nav button .nav-icon{width:20px;flex:0 0 20px;text-align:center;font-size:18px;color:#71839a}
+nav#nav button.active{background:#eaf2ff;color:#1458bd;border:0}
+nav#nav button.active .nav-icon{color:#1458bd}
+nav#nav button .badge{margin-left:auto}
+.nav-help{margin-top:auto;padding:14px 12px 4px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:5px;color:var(--navy)}
+.nav-help span,.nav-help small{font-size:11px;color:var(--mut);line-height:1.4}
+main{margin:0 0 0 232px;max-width:none;padding:26px clamp(16px,2.5vw,36px)}
+main section:not([hidden]){animation:pageIn .16s ease-out}
+@keyframes pageIn{from{opacity:.65;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.card{border-radius:12px;padding:18px 20px;margin-bottom:16px;box-shadow:0 2px 7px rgba(24,48,80,.035)}
+.card h3{font-size:14px;margin-bottom:12px}
+.kpi .v{font-size:27px;letter-spacing:-.5px}.kpi .l{font-size:12px;line-height:1.5}
+input,select,textarea{padding:9px 11px;border-color:#d4dce7}input:focus,select:focus,textarea:focus{outline:2px solid #d5e5ff;border-color:var(--blue)}
+.btn{padding:9px 15px}.btn:hover{filter:brightness(.96)}
+#t-complaints table,#t-cases table,#t-monitor table,#t-dashboard table,#drawer table{display:block;max-width:100%;overflow-x:auto;white-space:nowrap}
+tr.click:hover{background:#edf4ff}
+.drawer{padding:22px clamp(14px,2vw,28px)}.drawer h2{font-size:21px;line-height:1.4;padding-right:30px}.drawer .card{box-shadow:none}
+@media(max-width:760px){header{padding:12px 14px;align-items:flex-start}header h1{font-size:15px;max-width:100%}header>div:last-child{margin-left:0!important;flex-wrap:wrap}nav#nav{position:sticky;top:72px;width:100%;height:auto;bottom:auto;flex-direction:row;align-items:center;gap:4px;padding:8px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}.nav-label,.nav-help{display:none}nav#nav button{width:auto;flex:0 0 auto;padding:9px 11px;gap:6px;font-size:12px}nav#nav button .nav-icon{width:auto;flex:0 0 auto}main{margin:0;padding:16px 12px}.g5,.g2,.g3{grid-template-columns:1fr}.grid{gap:8px}.card{padding:14px}.barrow{grid-template-columns:110px 1fr 48px}.drawer{padding:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>CyberCell AI &mdash; Cybercrime Complaint &amp; Investigation Management</h1>
+  <div class="sub">Authorised law-enforcement personnel only &middot; Phase 1 Proof of Concept</div></div>
+  <div style="margin-left:auto;display:flex;gap:6px">
+    <span class="pill up" id="p-complaint">complaint-service: ...</span>
+    <span class="pill" id="p-analysis">analysis-service: ...</span>
+  </div>
+</header>
+<nav id="nav" aria-label="Main navigation">
+  <div class="nav-label">WORKSPACE</div>
+  <button data-t="dashboard" class="active"><span class="nav-icon">⌂</span><span>Overview</span></button>
+  <button data-t="complaints"><span class="nav-icon">▤</span><span>All complaints</span></button>
+  <button data-t="register"><span class="nav-icon">＋</span><span>Register complaint</span></button>
+  <div class="nav-label nav-label-spaced">INVESTIGATION</div>
+  <button data-t="cases"><span class="nav-icon">▣</span><span>Cases</span></button>
+  <button data-t="alerts"><span class="nav-icon">⚑</span><span>Alerts</span><span class="badge CRITICAL" id="alertCount" style="display:none">0</span></button>
+  <button data-t="monitor"><span class="nav-icon">⌁</span><span>Fraud monitoring</span></button>
+  <button data-t="query"><span class="nav-icon">⌕</span><span>Officer query</span></button>
+  <div class="nav-help"><b>CyberCell AI</b><span>Complaint &amp; investigation workspace</span><small>Proof of concept</small></div>
+</nav>
+<main>
+  <section id="t-dashboard"></section>
+  <section id="t-complaints" hidden></section>
+  <section id="t-register" hidden></section>
+  <section id="t-cases" hidden></section>
+  <section id="t-alerts" hidden></section>
+  <section id="t-monitor" hidden></section>
+  <section id="t-query" hidden></section>
+</main>
+<div class="overlay" id="ov"><div class="drawer" id="drawer"></div></div>
+<div class="toast" id="toast"></div>
+
+<script th:inline="none">
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = n => 'Rs ' + Number(n || 0).toLocaleString('en-IN', {maximumFractionDigits: 0});
+const CATS = ['ONLINE_FINANCIAL_FRAUD','PHISHING','IDENTITY_THEFT','ACCOUNT_COMPROMISE','SOCIAL_MEDIA_ABUSE','OTHER'];
+const pretty = s => String(s ?? '').replace(/_/g, ' ');
+const badge = (v, cls) => `<span class="badge ${cls || v}">${esc(pretty(v))}</span>`;
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',3200);}
+async function api(path, opts){
+  const r = await fetch('/api' + path, opts && opts.body ? {method: opts.method || 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(opts.body)} : opts);
+  if(!r.ok){let m=r.statusText;try{const j=await r.json();m=j.message||j.error||m}catch(e){}throw new Error(m)}
+  return r.json();
+}
+
+// ---------- navigation
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => show(b.dataset.t));
+function show(t){
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+  document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== 't-' + t);
+  ({dashboard, complaints: loadComplaints, register: regForm, cases: loadCases, alerts: loadAlerts, monitor: loadMonitor, query: queryView})[t]();
+}
+
+// ---------- health
+async function health(){
+  try{const h=await api('/health');
+    $('#p-complaint').textContent='complaint-service: UP';
+    const a=$('#p-analysis');a.textContent='analysis-service: '+(h.analysisServiceUp?'UP':'DOWN');a.className='pill '+(h.analysisServiceUp?'up':'down');
+  }catch(e){$('#p-complaint').textContent='complaint-service: DOWN';$('#p-complaint').className='pill down'}
+}
+
+// ---------- dashboard
+function bars(map, colorFn){
+  const entries = Object.entries(map || {}); const max = Math.max(1, ...entries.map(e => e[1]));
+  return entries.map(([k, v]) => `<div class="barrow"><span>${esc(pretty(k))}</span><div class="bar"><i style="width:${v/max*100}%;${colorFn?'background:'+colorFn(k):''}"></i></div><b>${v.toLocaleString('en-IN')}</b></div>`).join('') || '<span class="mut">No data</span>';
+}
+const prioColor = k => ({CRITICAL:'#c62828',HIGH:'#ef6c00',MEDIUM:'#f9a825',LOW:'#2e7d32'}[k]);
+async function dashboard(){
+  const d = await api('/dashboard');
+  $('#t-dashboard').innerHTML = `
+  <div style="margin:0 0 16px"><h2 style="margin:0 0 5px;color:var(--navy);font-size:23px">Overview</h2><div class="mut">A quick view of complaints, urgent cases and fraud patterns.</div><div class="row" style="margin-top:12px;align-items:center"><div class="fit"><button class="btn" onclick="show('register')">＋ Register complaint</button></div><div class="fit"><button class="btn sec" onclick="show('complaints')">View all complaints</button></div></div></div>
+  <div class="grid g5">
+    <div class="card kpi"><div class="v">${d.totalComplaints}</div><div class="l">Total complaints</div></div>
+    <div class="card kpi"><div class="v">${inr(d.totalLoss)}</div><div class="l">Reported financial loss</div></div>
+    <div class="card kpi"><div class="v" style="color:var(--crit)">${d.criticalHigh}</div><div class="l">Critical / High priority</div></div>
+    <div class="card kpi"><div class="v">${d.openCases}</div><div class="l">Open cases</div></div>
+    <div class="card kpi"><div class="v" style="color:var(--high)">${d.openAlerts}</div><div class="l">Open alerts</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3>Complaints by category</h3>${bars(d.byCategory)}</div>
+    <div class="card"><h3>Financial loss by category (Rs)</h3>${bars(Object.fromEntries(Object.entries(d.lossByCategory).map(([k,v])=>[k,Math.round(v)])))}</div>
+    <div class="card"><h3>Priority distribution</h3>${bars(d.byPriority, prioColor)}</div>
+    <div class="card"><h3>Investigation progress (cases)</h3>${bars(d.caseProgress)}</div>
+    <div class="card"><h3>Monthly trend (complaints)</h3>${bars(Object.fromEntries(Object.entries(d.monthly).map(([k,v])=>[k,v.count])))}</div>
+    <div class="card"><h3>Monthly trend (loss, Rs)</h3>${bars(Object.fromEntries(Object.entries(d.monthly).map(([k,v])=>[k,Math.round(v.loss)])))}</div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3>Related-case insights: recurring identifiers</h3>
+      <table><tr><th>Type</th><th>Identifier</th><th>Cases</th><th>Loss</th><th>Risk</th></tr>
+      ${d.topClusters.map(c=>`<tr><td>${esc(pretty(c.type))}</td><td>${esc(c.value)}</td><td>${c.complaintCount}</td><td>${inr(c.totalLoss)}</td><td>${badge(c.risk)}</td></tr>`).join('')}</table></div>
+    <div class="card"><h3>Latest high-priority complaints</h3>
+      <table><tr><th>No.</th><th>Category</th><th>Priority</th><th>Loss</th></tr>
+      ${d.recentHighPriority.map(c=>`<tr class="click" onclick="openDetail(${c.id})"><td>${esc(c.complaintNo)}</td><td>${esc(pretty(c.category))}</td><td>${badge(c.priority)}</td><td>${inr(c.amountLost)}</td></tr>`).join('')}</table></div>
+  </div>`;
+}
+
+// ---------- complaints list / search
+function complaintsTable(rows){
+  return `<table><tr><th>Complaint</th><th>Category</th><th>Victim</th><th>Incident date</th><th>Loss</th><th>Priority</th><th>Status</th><th>Assigned</th></tr>
+  ${rows.map(c=>`<tr class="click" onclick="openDetail(${c.id})"><td><b>${esc(c.complaintNo)}</b></td><td>${esc(pretty(c.category))}</td><td>${esc(c.victimName)}</td><td>${esc(c.incidentDate)}</td><td>${inr(c.amountLost)}</td>
+  <td>${badge(c.priority)} <span class="mut small">${c.priorityScore ?? ''}</span></td><td><span class="badge st">${esc(pretty(c.status))}</span></td><td>${esc(c.assignedTo || '-')}</td></tr>`).join('')}</table>
+  ${rows.length ? '' : '<p class="mut">No complaints match.</p>'}`;
+}
+async function loadComplaints(){
+  const el = $('#t-complaints');
+  if(!el.dataset.init){
+    el.dataset.init = 1;
+    el.innerHTML = `<div class="card"><div class="row">
+      <div style="flex:2"><label>Search (complaint no., name, UPI, phone, email, URL, account, IP, text)</label><input id="q" placeholder="e.g. quickrefund.support@okaxis"></div>
+      <div><label>Category</label><select id="fc"><option value="">All</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div><label>Priority</label><select id="fp"><option value="">All</option>${['CRITICAL','HIGH','MEDIUM','LOW'].map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div><label>Status</label><select id="fs"><option value="">All</option>${['REGISTERED','UNDER_INVESTIGATION','ESCALATED','CLOSED'].map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="fit"><button class="btn" onclick="loadComplaints()">Search</button></div></div></div><div class="card" id="clist"></div>`;
+    $('#q').addEventListener('keydown', e => e.key === 'Enter' && loadComplaints());
+  }
+  const p = new URLSearchParams({q: $('#q').value, category: $('#fc').value, priority: $('#fp').value, status: $('#fs').value});
+  const rows = await api('/complaints?' + p);
+  $('#clist').innerHTML = `<div class="mut small" style="margin-bottom:6px">${rows.length} result(s) &mdash; click a row to open the full AI analysis</div>` + complaintsTable(rows);
+}
+
+// ---------- register
+function regForm(){
+  const el = $('#t-register');
+  if(el.dataset.init) return; el.dataset.init = 1;
+  el.innerHTML = `<div class="card"><h3>Register new cybercrime complaint</h3>
+  <p class="mut small">Leave "Category" on <i>Auto-detect</i> to let the AI classify the complaint. After saving, the AI engine compares it against all historical complaints and returns priority, related cases and key factors.</p>
+  <div class="grid g3">
+    <div><label>Victim / affected party *</label><input id="r_victimName"></div>
+    <div><label>Victim profile</label><select id="r_victimProfile"><option value="">-</option><option>Salaried employee</option><option>Student</option><option>Senior citizen</option><option>Small business owner</option><option>Homemaker</option><option>Retired pensioner</option><option>IT professional</option></select></div>
+    <div><label>Victim contact</label><input id="r_victimContact"></div>
+    <div><label>Incident date</label><input type="date" id="r_incidentDate"></div>
+    <div><label>Amount lost (Rs)</label><input type="number" min="0" id="r_amountLost" value="0"></div>
+    <div><label>Crime category</label><select id="r_category"><option value="">Auto-detect (AI)</option>${CATS.filter(c=>c!=='OTHER').map(c=>`<option>${c}</option>`).join('')}</select></div>
+  </div>
+  <label>Incident description *</label><textarea id="r_description" placeholder="Describe what happened, in the victim's own words..."></textarea>
+  <h3 style="margin-top:14px">Suspect digital identifiers</h3>
+  <div class="grid g3">
+    <div><label>Suspect UPI ID</label><input id="r_suspectUpi"></div>
+    <div><label>Suspect phone</label><input id="r_suspectPhone"></div>
+    <div><label>Suspect email</label><input id="r_suspectEmail"></div>
+    <div><label>Suspect URL / website</label><input id="r_suspectUrl"></div>
+    <div><label>Beneficiary bank account</label><input id="r_suspectAccount"></div>
+    <div><label>Suspect IP address</label><input id="r_suspectIp"></div>
+  </div>
+  <h3 style="margin-top:14px">Transaction</h3>
+  <div class="grid g3">
+    <div><label>Transaction reference</label><input id="r_txnRef"></div>
+    <div><label>Payment mode</label><select id="r_paymentMode"><option>UPI</option><option>NEFT</option><option>IMPS</option><option>CARD</option><option>WALLET</option><option>CRYPTO</option></select></div>
+    <div><label>Victim account (from)</label><input id="r_fromAccount"></div>
+  </div>
+  <div style="margin-top:14px" class="row"><div class="fit"><button class="btn" id="regBtn" onclick="submitReg()">Register &amp; run AI analysis</button></div>
+  <div class="fit"><button class="btn sec" onclick="fillDemo()">Fill demo OLX/QR scam</button></div></div></div>`;
+  $('#r_incidentDate').value = new Date().toISOString().slice(0,10);
+}
+function fillDemo(){
+  const v = {victimName:'Demo Victim',victimProfile:'Senior citizen',victimContact:'9000000000',amountLost:85000,
+    description:'A person who wanted to buy my sofa on OLX sent a QR code to receive payment. I scanned it and Rs 85000 was debited from my account via UPI. He then asked me to approve a refund request.',
+    suspectUpi:'quickrefund.support@okaxis',suspectAccount:'50200098761234',txnRef:'TXN'+Date.now()};
+  Object.entries(v).forEach(([k,x])=>$('#r_'+k).value=x);
+}
+async function submitReg(){
+  const f = id => $('#r_' + id).value;
+  const body = {}; ['category','description','victimName','victimProfile','victimContact','incidentDate','suspectUpi','suspectPhone','suspectEmail','suspectUrl','suspectAccount','suspectIp','txnRef','paymentMode','fromAccount'].forEach(k => body[k] = f(k));
+  body.amountLost = parseFloat(f('amountLost')) || 0; body.toAccount = f('suspectAccount');
+  if(!body.description.trim() || !body.victimName.trim()) return toast('Victim name and description are required');
+  const b = $('#regBtn'); b.disabled = true; b.textContent = 'Analysing...';
+  try{
+    const d = await api('/complaints', {body});
+    toast('Registered ' + d.complaint.complaintNo + (d.analysisAvailable ? '' : ' (AI service unavailable)'));
+    renderDetail(d);
+  }catch(e){toast('Error: ' + e.message)}
+  b.disabled = false; b.textContent = 'Register & run AI analysis';
+}
+
+// ---------- complaint detail drawer
+$('#ov').addEventListener('click', e => { if(e.target.id === 'ov') closeDetail(); });
+function closeDetail(){ $('#ov').classList.remove('show'); }
+async function openDetail(id){ renderDetail(await api('/complaints/' + id)); }
+function renderDetail(d){
+  const c = d.complaint, a = d.analysis, cs = d.case;
+  const aiBlock = !a ? `<div class="card"><h3>AI analysis</h3><p class="mut">No AI analysis stored yet.</p><button class="btn" onclick="reanalyze(${c.id})">Run AI analysis</button></div>` : `
+  <div class="grid g2">
+   <div class="card"><h3>AI classification</h3>
+     <div style="font-size:18px;font-weight:700;color:var(--navy)">${esc(pretty(a.category))}</div>
+     <div class="mut small">Confidence ${(a.confidence*100).toFixed(0)}% &middot; hybrid model: weighted keyword lexicon + Naive Bayes trained on ${'historical complaints'}</div>
+     <div style="margin-top:8px">${Object.entries(a.categoryScores).sort((x,y)=>y[1]-x[1]).filter(e=>e[1]>0).map(([k,v])=>`<div class="barrow" style="grid-template-columns:150px 1fr 44px"><span>${esc(pretty(k))}</span><div class="bar"><i style="width:${v*100}%"></i></div><b>${(v*100).toFixed(0)}%</b></div>`).join('')}</div>
+     <div style="margin-top:6px" class="small">Key terms matched: ${(a.categoryKeywords||[]).map(k=>`<span class="tag">${esc(k)}</span>`).join('') || '<span class="mut">none</span>'}</div></div>
+   <div class="card"><h3>AI priority</h3>
+     <div class="score" style="color:${prioColor(a.priority)}">${a.priorityScore}<span class="mut" style="font-size:14px">/100</span> ${badge(a.priority)}</div>
+     <div class="small mut" style="margin-top:4px">Key factors considered:</div>
+     <ul class="f small">${a.priorityFactors.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>
+  </div>
+  <div class="card"><h3>Related cases &amp; patterns <span class="mut small">(evidence-based comparison with ${'all earlier complaints'})</span></h3>
+    <div class="small" style="margin-bottom:6px"><b>${esc(a.summary)}</b></div>
+    ${a.patterns.length ? `<div class="small"><b>Patterns detected</b><ul class="f">${a.patterns.map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div>` : ''}
+    ${a.related.length ? a.related.map(r=>`<div class="rel"><div class="row" style="align-items:center"><div><b class="click" style="cursor:pointer;color:var(--blue)" onclick="openDetail(${r.id})">${esc(r.complaintNo)}</b> <span class="mut small">${esc(pretty(r.category))}</span></div>
+      <div style="max-width:220px"><div class="bar"><i style="width:${r.score*100}%;background:${r.score>=.5?'var(--crit)':'var(--med)'}"></i></div></div><div class="fit"><b>${(r.score*100).toFixed(0)}%</b> ${r.score>=.5?'<span class="badge CRITICAL">LIKELY RELATED</span>':'<span class="badge MEDIUM">POSSIBLE</span>'}</div></div>
+      <ul class="f small">${r.factors.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`).join('') : '<p class="mut">No related earlier complaints above threshold.</p>'}</div>`;
+  const acts = (d.recommendedActions||[]).length ? `<div class="card"><h3>Recommended investigation actions</h3><ul class="f">${d.recommendedActions.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+  const caseBlock = cs ? `<div class="card"><h3>Investigation case ${esc(cs.caseNo)} ${badge(cs.caseStatus,'st')}</h3>
+    <div class="small mut">Investigator: <b>${esc(cs.investigator)}</b> &middot; opened ${esc((cs.openedAt||'').replace('T',' ').slice(0,16))}</div>
+    <div class="row" style="margin-top:8px">
+      <div style="flex:0 0 170px"><select id="a_type"><option>OBSERVATION</option><option>BANK_REQUEST</option><option>PLATFORM_NOTICE</option><option>INTERVIEW</option><option>EVIDENCE_COLLECTED</option><option>FIELD_VISIT</option></select></div>
+      <div style="flex:3"><input id="a_note" placeholder="Record an investigation activity / observation"></div>
+      <div class="fit"><button class="btn small" onclick="addActivity(${cs.id},${c.id})">Add</button></div></div>
+    <div style="margin-top:6px" class="row"><div class="fit"><button class="btn sec small" onclick="caseStatus(${cs.id},${c.id},'IN_PROGRESS')">In progress</button></div>
+      <div class="fit"><button class="btn warn small" onclick="caseStatus(${cs.id},${c.id},'ESCALATED')">Escalate</button></div>
+      <div class="fit"><button class="btn sec small" onclick="caseStatus(${cs.id},${c.id},'CLOSED')">Close case</button></div></div>
+    ${d.activities.map(x=>`<div class="act small"><b>${esc(pretty(x.activityType))}</b> <span class="mut">${esc((x.createdAt||'').replace('T',' ').slice(0,16))} &middot; ${esc(x.createdBy)}</span><div>${esc(x.note)}</div></div>`).join('')}</div>`
+  : `<div class="card"><h3>Investigation case</h3><div class="row"><div><label>Assign investigator</label><select id="inv"><option>SI Rajesh</option><option>Insp. Meera</option><option>SI Karthik</option><option>Insp. Anand</option><option>SI Divya</option></select></div>
+     <div class="fit"><button class="btn" onclick="openCase(${c.id})">Create case &amp; assign</button></div></div></div>`;
+  $('#drawer').innerHTML = `<button class="close" onclick="closeDetail()">&times;</button>
+  <h2 style="margin:0 0 4px;color:var(--navy)">${esc(c.complaintNo)} ${badge(c.priority)} <span class="badge st">${esc(pretty(c.status))}</span></h2>
+  <div class="mut small" style="margin-bottom:10px">${esc(pretty(c.category))} &middot; incident ${esc(c.incidentDate)} &middot; loss ${inr(c.amountLost)} &middot; source ${esc(c.source)}</div>
+  <div class="card"><h3>Complaint</h3><p style="margin:0 0 8px">${esc(c.description)}</p>
+    <div class="small"><b>Victim:</b> ${esc(c.victimName)} (${esc(c.victimProfile||'-')}) ${c.victimContact?'&middot; '+esc(c.victimContact):''}</div>
+    <div class="small" style="margin-top:4px"><b>Suspect identifiers:</b> ${[['UPI',c.suspectUpi],['Phone',c.suspectPhone],['Email',c.suspectEmail],['URL',c.suspectUrl],['Account',c.suspectAccount],['IP',c.suspectIp]].filter(x=>x[1]).map(x=>`<span class="tag">${x[0]}: ${esc(x[1])}</span>`).join('') || '<span class="mut">none recorded</span>'}</div></div>
+  ${aiBlock}${acts}${caseBlock}
+  <div class="grid g2">
+   <div class="card"><h3>Transactions</h3>
+    <table class="small"><tr><th>Ref</th><th>Amount</th><th>To account</th><th>Mode</th></tr>${d.transactions.map(t=>`<tr><td>${esc(t.txnRef)}</td><td>${inr(t.amount)}</td><td>${esc(t.toAccount||'-')}</td><td>${esc(t.paymentMode)}</td></tr>`).join('')}</table>
+    <div class="row" style="margin-top:8px"><input id="t_ref" placeholder="Txn ref"><input id="t_amt" type="number" placeholder="Amount"><input id="t_to" placeholder="To account"><div class="fit"><button class="btn small" onclick="addTxn(${c.id})">Add</button></div></div></div>
+   <div class="card"><h3>Digital evidence references</h3>
+    <table class="small"><tr><th>Type</th><th>Reference</th><th>Note</th></tr>${d.evidence.map(e=>`<tr><td>${esc(e.evidenceType)}</td><td>${esc(e.refValue)}</td><td>${esc(e.note||'')}</td></tr>`).join('')}</table>
+    <div class="row" style="margin-top:8px"><select id="e_type"><option>URL</option><option>EMAIL</option><option>TRANSACTION</option><option>DOCUMENT</option><option>SCREENSHOT</option><option>OTHER</option></select><input id="e_ref" placeholder="Reference / link / hash"><div class="fit"><button class="btn small" onclick="addEvidence(${c.id})">Add</button></div></div></div>
+  </div>
+  <button class="btn sec" onclick="reanalyze(${c.id})">Re-run AI analysis</button>`;
+  $('#ov').classList.add('show');
+}
+async function refresh(id){ renderDetail(await api('/complaints/' + id)); }
+async function reanalyze(id){ try{const d=await api('/complaints/'+id+'/analyze',{body:{}}); toast(d.analysisAvailable?'AI analysis updated':'analysis-service unavailable'); renderDetail(d);}catch(e){toast(e.message)} }
+async function openCase(id){ await api('/complaints/'+id+'/case',{body:{investigator:$('#inv').value}}); toast('Case created'); refresh(id); }
+async function addActivity(caseId, cid){ const n=$('#a_note').value.trim(); if(!n) return; await api('/cases/'+caseId+'/activities',{body:{activityType:$('#a_type').value,note:n,createdBy:'officer'}}); refresh(cid); }
+async function caseStatus(caseId, cid, s){ await api('/cases/'+caseId+'/status',{method:'PUT',body:{status:s}}); toast('Case ' + s); refresh(cid); }
+async function addTxn(cid){ await api('/complaints/'+cid+'/transactions',{body:{txnRef:$('#t_ref').value,amount:parseFloat($('#t_amt').value)||0,toAccount:$('#t_to').value}}); refresh(cid); }
+async function addEvidence(cid){ if(!$('#e_ref').value.trim()) return; await api('/complaints/'+cid+'/evidence',{body:{evidenceType:$('#e_type').value,refValue:$('#e_ref').value}}); refresh(cid); }
+
+// ---------- cases / alerts / monitoring / query
+async function loadCases(){
+  const rows = await api('/cases');
+  $('#t-cases').innerHTML = `<div class="card"><h3>Investigation cases (${rows.length})</h3><table><tr><th>Case</th><th>Complaint</th><th>Category</th><th>Priority</th><th>Investigator</th><th>Status</th></tr>
+  ${rows.map(r=>`<tr class="click" onclick="openDetail(${r.complaintId})"><td><b>${esc(r.caseNo)}</b></td><td>${esc(r.complaintNo)}</td><td>${esc(pretty(r.category))}</td><td>${badge(r.priority)}</td><td>${esc(r.investigator)}</td><td>${badge(r.caseStatus,'st')}</td></tr>`).join('')}</table></div>`;
+}
+async function loadAlerts(){
+  const rows = await api('/alerts');
+  const cnt = $('#alertCount'); cnt.style.display = rows.length ? '' : 'none'; cnt.textContent = rows.length;
+  $('#t-alerts').innerHTML = `<div class="card"><h3>Alerts &amp; escalations (${rows.length} open)</h3>
+  ${rows.map(a=>`<div class="alert ${a.alertLevel}"><div style="flex:1"><div>${badge(a.alertLevel)} <span class="badge st">${esc(pretty(a.alertType))}</span> <b class="click" style="cursor:pointer;color:var(--blue)" onclick="openDetail(${a.complaintId})">${esc(a.complaintNo)}</b> <span class="mut small">${esc((a.createdAt||'').replace('T',' ').slice(0,16))}</span></div><div style="margin-top:4px">${esc(a.message)}</div></div>
+  <button class="btn sec small" onclick="resolveAlert(${a.id})">Resolve</button></div>`).join('') || '<p class="mut">No open alerts.</p>'}</div>`;
+}
+async function resolveAlert(id){ await api('/alerts/'+id+'/resolve',{body:{}}); loadAlerts(); }
+async function loadMonitor(){
+  const rows = await api('/monitoring/clusters');
+  $('#t-monitor').innerHTML = `<div class="card"><h3>Financial fraud &amp; transaction monitoring: recurring identifiers and beneficiary accounts</h3>
+  <p class="mut small">Beneficiary accounts, UPI IDs, phones, domains, emails and IPs that appear in two or more independent complaints &mdash; strong indicators of mule accounts or organised campaigns.</p>
+  <table><tr><th>Type</th><th>Identifier</th><th>Complaints</th><th>Total loss</th><th>First seen</th><th>Last seen</th><th>Risk</th><th>Complaint nos.</th></tr>
+  ${rows.map(c=>`<tr><td>${esc(pretty(c.type))}</td><td><b>${esc(c.value)}</b></td><td>${c.complaintCount}</td><td>${inr(c.totalLoss)}</td><td>${esc(c.firstSeen||'')}</td><td>${esc(c.lastSeen||'')}</td><td>${badge(c.risk)}</td><td class="small mut">${c.complaintNos.map(esc).join(', ')}</td></tr>`).join('')}</table></div>`;
+}
+function queryView(){
+  const el = $('#t-query'); if(el.dataset.init) return; el.dataset.init = 1;
+  el.innerHTML = `<div class="card"><h3>Officer query</h3>
+  <div class="ans">"Are these newly reported online financial-fraud complaints related to any previously reported cases?"</div>
+  <div class="row" style="margin-top:10px"><div class="fit" style="width:200px"><label>Look back (days)</label><input id="qd" type="number" value="7" min="1"></div><div class="fit"><button class="btn" id="qbtn" onclick="runQuery()">Analyse</button></div></div></div><div id="qres"></div>`;
+}
+async function runQuery(){
+  const b = $('#qbtn'); b.disabled = true; b.textContent = 'Analysing...';
+  try{
+    const r = await api('/insights/new-fraud-links?days=' + ($('#qd').value || 7));
+    $('#qres').innerHTML = `<div class="card"><div class="ans">${esc(r.answer)}</div><div class="mut small">${r.reviewed} complaint(s) reviewed &middot; ${r.linked} linked</div></div>` +
+    r.complaints.map(c=>`<div class="card"><div class="row" style="align-items:center"><div><b class="click" style="cursor:pointer;color:var(--blue)" onclick="openDetail(${c.id})">${esc(c.complaintNo)}</b> &middot; ${esc(c.victimName)} &middot; ${inr(c.amountLost)} ${badge(c.priority)}</div>
+      <div class="fit">${c.verdict==='LINKED'?'<span class="badge CRITICAL">LINKED TO EARLIER CASES</span>':'<span class="badge LOW">NO STRONG LINK</span>'}</div></div>
+      ${c.topPattern?`<div class="small" style="margin-top:6px"><b>Pattern:</b> ${esc(c.topPattern)}</div>`:''}
+      ${c.linkedCases.map(l=>`<div class="rel"><b>${esc(l.complaintNo)}</b> &mdash; ${(l.score*100).toFixed(0)}% match<ul class="f small">${l.factors.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`).join('')}</div>`).join('');
+  }catch(e){toast('Error: '+e.message)}
+  b.disabled = false; b.textContent = 'Analyse';
+}
+
+health(); setInterval(health, 15000); dashboard();
+api('/alerts').then(r => { const c=$('#alertCount'); if(r.length){c.style.display='';c.textContent=r.length} }).catch(()=>{});
+</script>
+</body>
+</html>
